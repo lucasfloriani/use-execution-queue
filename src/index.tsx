@@ -1,23 +1,31 @@
-import * as React from 'react';
+import { useCallback, useEffect, useState } from "react";
 
-export const useMyHook = () => {
-  let [{
-    counter
-  }, setState] = React.useState<{
-    counter: number;
-  }>({
-    counter: 0
-  });
+interface HookProps {
+  intervalTime: number;
+}
 
-  React.useEffect(() => {
-    let interval = window.setInterval(() => {
-      counter++;
-      setState({counter})
-    }, 1000)
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, []);
+export const useExecutionQueue = (
+  { intervalTime }: HookProps = { intervalTime: 1000 }
+) => {
+  const [queue, setQueue] = useState<Array<Function>>([]);
 
-  return counter;
+  useEffect(() => {
+    const intervalID = setInterval(() => {
+      if (queue.length > 0) {
+        const next = queue.shift();
+        if (next) next();
+      }
+      setQueue(queue);
+    }, intervalTime);
+
+    return () => clearInterval(intervalID);
+  }, [intervalTime, queue]);
+
+  const addToQueue = useCallback(
+    (fn: Function) =>
+      setQueue((previousQueue: Array<Function>) => [...previousQueue, fn]),
+    []
+  );
+
+  return { queue, addToQueue };
 };

@@ -7,24 +7,42 @@
 ## Install
 
 ```bash
-npm install --save use-execution-queue
+npm install use-execution-queue
+yarn add use-execution-queue
 ```
 
 ## Usage
 
 ```tsx
-import * as React from 'react'
+import * as React from "react";
 
-import { useMyHook } from 'use-execution-queue'
+import { useExecutionQueue } from "use-execution-queue";
 
 const Example = () => {
-  const example = useMyHook()
+  const [text, setText] = React.useState("Test");
+  const [asyncItems, setAsyncItems] = React.useState([]);
+  const { addToQueue } = useExecutionQueue();
+
   return (
     <div>
-      {example}
+      <ul>
+        {asyncItems.map((item, index) => (
+          <li key={index}>{item}</li>
+        ))}
+      </ul>
+      <input value={text} onChange={(e) => setText(e.target.value)} />
+      <button
+        onClick={() => {
+          addToQueue(() => {
+            setAsyncItems((previousItems) => [...previousItems, text]);
+          });
+        }}
+      >
+        Add Using Queue
+      </button>
     </div>
-  )
-}
+  );
+};
 ```
 
 ## License

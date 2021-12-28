@@ -1,29 +1,48 @@
-import { useMyHook } from './'
+import { useExecutionQueue } from "./";
 import { renderHook, act } from "@testing-library/react-hooks";
 
-// mock timer using jest
 jest.useFakeTimers();
 
-describe('useMyHook', () => {
-  it('updates every second', () => {
-    const { result } = renderHook(() => useMyHook());
+describe("useExecutionQueue", () => {
+  it("queue works as intended", () => {
+    const { result } = renderHook(() => useExecutionQueue());
+    expect(result.current.queue).toHaveLength(0);
 
-    expect(result.current).toBe(0);
+    const mockFn = jest.fn();
+    act(() => {
+      result.current.addToQueue(mockFn);
+    });
+    expect(result.current.queue).toHaveLength(1);
 
-    // Fast-forward 1sec
     act(() => {
       jest.advanceTimersByTime(1000);
     });
+    expect(result.current.queue).toHaveLength(0);
+    expect(mockFn).toHaveBeenCalled();
+  });
 
-    // Check after total 1 sec
-    expect(result.current).toBe(1);
+  it("should works with custom props", () => {
+    const { result } = renderHook(() =>
+      useExecutionQueue({ intervalTime: 500 })
+    );
+    expect(result.current.queue).toHaveLength(0);
 
-    // Fast-forward 1 more sec
+    const mockFn = jest.fn();
     act(() => {
-      jest.advanceTimersByTime(1000);
+      result.current.addToQueue(mockFn);
     });
+    expect(result.current.queue).toHaveLength(1);
 
-    // Check after total 2 sec
-    expect(result.current).toBe(2);
-  })
-})
+    act(() => {
+      jest.advanceTimersByTime(250);
+    });
+    expect(result.current.queue).toHaveLength(1);
+    expect(mockFn).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(250);
+    });
+    expect(result.current.queue).toHaveLength(0);
+    expect(mockFn).toHaveBeenCalled();
+  });
+});

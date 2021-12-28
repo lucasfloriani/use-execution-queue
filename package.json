@@ -1,6 +1,6 @@
 {
   "name": "use-execution-queue",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Custom hook that implements a queue to execute functions",
   "author": "lucasfloriani",
   "license": "MIT",
